@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mood Tracker 🌸</title>
+  <style>
+    /* 🌸 GENERAL STYLES */
+    * {
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+      transition: all 0.3s ease;
+    }
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #ffe6f0 0%, #fef7ff 100%);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 20px;
+      min-height: 100vh;
+      color: #444;
+    }
+
+    .container {
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      padding: 30px 25px;
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #ff6fa7;
+      font-weight: 700;
+      margin-bottom: 10px;
+      font-size: 2rem;
+    }
+
+    p.subtitle {
+      color: #888;
+      font-size: 0.95rem;
+      margin-bottom: 25px;
+    }
+
+    /* 🌸 MOOD SELECTOR */
+    .mood-selector {
+      display: flex;
+      justify-content: space-around;
+      margin: 15px 0;
+      font-size: 32px;
+    }
+
+    .mood-selector span {
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 50%;
+      background: #fff5f8;
+      border: 2px solid transparent;
+    }
+
+    .mood-selector span:hover {
+      transform: scale(1.15);
+      background: #ffeaf1;
+    }
+
+    .selected {
+      background: #ffdeeb;
+      border-color: #ff6fa7;
+      box-shadow: 0 0 10px rgba(255, 111, 167, 0.5);
+      transform: scale(1.2);
+    }
+
+    /* 🌸 NOTE INPUT */
+    textarea {
+      width: 100%;
+      height: 90px;
+      border: 2px solid #ffe1ec;
+      border-radius: 16px;
+      padding: 12px;
+      margin-top: 15px;
+      resize: none;
+      font-size: 0.95rem;
+      background: #fff8fb;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: #ff6fa7;
+      box-shadow: 0 0 5px rgba(255,111,167,0.4);
+    }
+
+    /* 🌸 BUTTON */
+    button {
+      margin-top: 18px;
+      background: #ff6fa7;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 12px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+      font-weight: 600;
+      box-shadow: 0 4px 10px rgba(255,111,167,0.3);
+    }
+
+    button:hover {
+      background: #ff85b6;
+    }
+
+    /* 🌸 HISTORY SECTION */
+    .history {
+      margin-top: 30px;
+      text-align: left;
+    }
+
+    .history h3 {
+      color: #ff6fa7;
+      margin-bottom: 10px;
+    }
+
+    .entry {
+      background: #fff7fb;
+      border-left: 5px solid #ffb6d1;
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+
+    .entry small {
+      color: #999;
+      font-size: 0.8rem;
+    }
+
+    canvas {
+      margin-top: 30px;
+      width: 100%;
+      height: 220px;
+    }
+
+    /* 🌸 SMOOTH FADE-IN */
+    .container, .entry, canvas, button, textarea, .mood-selector span {
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌸 My Mood Tracker</h1>
+    <p class="subtitle">How are you feeling today?</p>
+
+    <div class="mood-selector" id="moodSelector">
+      <span data-mood="1">😞</span>
+      <span data-mood="2">😕</span>
+      <span data-mood="3">😐</span>
+      <span data-mood="4">😊</span>
+      <span data-mood="5">🥰</span>
+    </div>
+
+    <textarea id="note" placeholder="Write a little note about your day..."></textarea>
+    <button id="saveMood">💖 Save My Mood</button>
+
+    <div class="history" id="history"></div>
+
+    <canvas id="moodChart"></canvas>
+  </div>
+
+  <script>
+    const moodSelector = document.getElementById("moodSelector");
+    const noteInput = document.getElementById("note");
+    const saveButton = document.getElementById("saveMood");
+    const historyContainer = document.getElementById("history");
+    const canvas = document.getElementById("moodChart");
+    const ctx = canvas.getContext("2d");
+    let selectedMood = null;
+
+    // Handle mood selection
+    moodSelector.addEventListener("click", (e) => {
+      if (e.target.tagName === "SPAN") {
+        document.querySelectorAll(".mood-selector span").forEach((span) => span.classList.remove("selected"));
+        e.target.classList.add("selected");
+        selectedMood = e.target.dataset.mood;
+      }
+    });
+
+    // Save mood entry
+    saveButton.addEventListener("click", () => {
+      if (!selectedMood) {
+        alert("Please pick your mood 💕");
+        return;
+      }
+
+      const note = noteInput.value.trim();
+      const entry = {
+        date: new Date().toLocaleDateString(),
+        mood: Number(selectedMood),
+        note: note,
+      };
+
+      const moodHistory = JSON.parse(localStorage.getItem("moodHistory")) || [];
+      moodHistory.push(entry);
+      localStorage.setItem("moodHistory", JSON.stringify(moodHistory));
+
+      noteInput.value = "";
+      selectedMood = null;
+      document.querySelectorAll(".mood-selector span").forEach((span) => span.classList.remove("selected"));
+      renderHistory();
+      drawChart();
+    });
+
+    // Render mood history
+    function renderHistory() {
+      const moodHistory = JSON.parse(localStorage.getItem("moodHistory")) || [];
+      if (moodHistory.length === 0) {
+        historyContainer.innerHTML = "<h3>Your past moods will appear here 💕</h3>";
+        return;
+      }
+
+      historyContainer.innerHTML = "<h3>💫 Mood History</h3>";
+
+      moodHistory.slice().reverse().forEach((entry) => {
+        const div = document.createElement("div");
+        div.classList.add("entry");
+        div.innerHTML = `
+          <div>${getMoodEmoji(entry.mood)} ${entry.note || ""}</div>
+          <small>${entry.date}</small>
+        `;
+        historyContainer.appendChild(div);
+      });
+    }
+
+    // Draw cute chart
+    function drawChart() {
+      const moodHistory = JSON.parse(localStorage.getItem("moodHistory")) || [];
+      const moods = moodHistory.map((m) => m.mood);
+      const width = canvas.width = canvas.offsetWidth;
+      const height = canvas.height = 220;
+
+      ctx.clearRect(0, 0, width, height);
+      if (moods.length === 0) return;
+
+      ctx.beginPath();
+      ctx.moveTo(0, height - moods[0] * 35);
+
+      const step = width / (moods.length - 1);
+      moods.forEach((mood, i) => {
+        const x = i * step;
+        const y = height - mood * 35;
+        ctx.lineTo(x, y);
+      });
+
+      ctx.strokeStyle = "#ff85b6";
+      ctx.lineWidth = 3;
+      ctx.lineJoin = "round";
+      ctx.stroke();
+
+      // Soft pastel dots 💕
+      moods.forEach((mood, i) => {
+        const x = i * step;
+        const y = height - mood * 35;
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = "#ffb6d1";
+        ctx.fill();
+      });
+    }
+
+    function getMoodEmoji(level) {
+      switch (level) {
+        case 1: return "😞";
+        case 2: return "😕";
+        case 3: return "😐";
+        case 4: return "😊";
+        case 5: return "🥰";
+      }
+    }
+
+    // Initialize
+    renderHistory();
+    drawChart();
+  </script>
+</body>
+</html>
