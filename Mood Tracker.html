@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mood Tracker 🌸</title>
   <style>
-    /* 🌸 GENERAL STYLES */
     * {
       box-sizing: border-box;
       font-family: "Poppins", sans-serif;
@@ -45,7 +44,6 @@
       margin-bottom: 25px;
     }
 
-    /* 🌸 MOOD SELECTOR */
     .mood-selector {
       display: flex;
       justify-content: space-around;
@@ -73,7 +71,6 @@
       transform: scale(1.2);
     }
 
-    /* 🌸 NOTE INPUT */
     textarea {
       width: 100%;
       height: 90px;
@@ -92,7 +89,6 @@
       box-shadow: 0 0 5px rgba(255,111,167,0.4);
     }
 
-    /* 🌸 BUTTON */
     button {
       margin-top: 18px;
       background: #ff6fa7;
@@ -110,8 +106,6 @@
     button:hover {
       background: #ff85b6;
     }
-
-    /* 🌸 HISTORY SECTION */
     .history {
       margin-top: 30px;
       text-align: left;
@@ -145,7 +139,6 @@
       height: 220px;
     }
 
-    /* 🌸 SMOOTH FADE-IN */
     .container, .entry, canvas, button, textarea, .mood-selector span {
       animation: fadeIn 0.5s ease forwards;
     }
@@ -167,6 +160,7 @@
       <span data-mood="3">😐</span>
       <span data-mood="4">😊</span>
       <span data-mood="5">🥰</span>
+      <span data-mood="6">😎</span>
     </div>
 
     <textarea id="note" placeholder="Write a little note about your day..."></textarea>
@@ -186,7 +180,7 @@
     const ctx = canvas.getContext("2d");
     let selectedMood = null;
 
-    // Handle mood selection
+
     moodSelector.addEventListener("click", (e) => {
       if (e.target.tagName === "SPAN") {
         document.querySelectorAll(".mood-selector span").forEach((span) => span.classList.remove("selected"));
@@ -195,7 +189,6 @@
       }
     });
 
-    // Save mood entry
     saveButton.addEventListener("click", () => {
       if (!selectedMood) {
         alert("Please pick your mood 💕");
@@ -241,7 +234,6 @@
       });
     }
 
-    // Draw cute chart
     function drawChart() {
       const moodHistory = JSON.parse(localStorage.getItem("moodHistory")) || [];
       const moods = moodHistory.map((m) => m.mood);
@@ -266,12 +258,11 @@
       ctx.lineJoin = "round";
       ctx.stroke();
 
-      // Soft pastel dots 💕
       moods.forEach((mood, i) => {
         const x = i * step;
         const y = height - mood * 35;
         ctx.beginPath();
-        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.arc(x, y, 6, 0, Math.PI * 2);
         ctx.fillStyle = "#ffb6d1";
         ctx.fill();
       });
@@ -284,12 +275,13 @@
         case 3: return "😐";
         case 4: return "😊";
         case 5: return "🥰";
+        case 6: return "😎";
       }
     }
 
-    // Initialize
     renderHistory();
     drawChart();
   </script>
 </body>
 </html>
+
